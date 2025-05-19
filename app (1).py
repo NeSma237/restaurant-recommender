@@ -52,7 +52,7 @@ if st.sidebar.button("Show Recommendations"):
             st.write(f"- Cost Category: **{row['cost_category'].title()}** (Approx ₹{int(row['cost'])} for two)")
             st.write(f"- Rating: **{row['rating']}★**")
             st.write(explain_row(row))
-            # خرائط جوجل لو موجودة الإحداثيات
+            # خرائط جوجل (لو موجودة)
             lat = row.get('Latitude')
             lon = row.get('Longitude')
             if pd.notnull(lat) and pd.notnull(lon):
@@ -60,32 +60,33 @@ if st.sidebar.button("Show Recommendations"):
                 st.markdown(f"[Open on Map]({map_url})")
             st.markdown("---")
 
-        # --- إضافة تقييم المستخدم بعد التوصيات ---
-        st.header("📝 Feedback on Recommendations")
+    st.header("📝 Feedback on Recommendations")
 
-        satisfaction = st.slider(
-            "How satisfied are you with the recommendations? (1 = Not satisfied, 5 = Very satisfied)", 1, 5, 3)
-        relevance = st.radio(
-            "Were the recommendations relevant to your preferences?", ("Yes", "No"))
-        usability = st.text_area("Any comments or suggestions to improve usability?")
+    satisfaction = st.slider(
+        "How satisfied are you with the recommendations? (1 = Not satisfied, 5 = Very satisfied)", 1, 5, 3)
+    relevance = st.radio(
+        "Were the recommendations relevant to your preferences?", ("Yes", "No"))
+    usability = st.text_area("Any comments or suggestions to improve usability?")
 
-        if st.button("Submit Feedback"):
-            feedback_data = {
-                "city": city_input,
-                "cuisines": ",".join(cuisine_input) if cuisine_input else "",
-                "budget": budget_input,
-                "satisfaction": satisfaction,
-                "relevance": relevance,
-                "comments": usability,
-            }
-            # حفظ التقييم في ملف CSV (append)
-            with open('feedback.csv', 'a', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=feedback_data.keys())
-                if f.tell() == 0:  # لو الملف جديد، نكتب العناوين
-                    writer.writeheader()
-                writer.writerow(feedback_data)
+    if st.button("Submit Feedback"):
+        feedback_data = {
+            "city": city_input,
+            "cuisines": ",".join(cuisine_input) if cuisine_input else "",
+            "budget": budget_input,
+            "satisfaction": satisfaction,
+            "relevance": relevance,
+            "comments": usability,
+        }
+        with open('feedback.csv', 'a', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=feedback_data.keys())
+            if f.tell() == 0:
+                writer.writeheader()
+            writer.writerow(feedback_data)
 
-            st.success("Thank you for your feedback!")
-            st.write(f"Satisfaction score: {satisfaction}")
-            st.write(f"Relevant recommendations: {relevance}")
-            st.write(f"Comments: {usability if usability else 'No comments'}")
+        st.session_state.feedback_submitted = True
+
+if st.session_state.get('feedback_submitted', False):
+    st.success("Thank you for your feedback!")
+    st.write(f"Satisfaction score: {satisfaction}")
+    st.write(f"Relevant recommendations: {relevance}")
+    st.write(f"Comments: {usability if usability else 'No comments'}")
