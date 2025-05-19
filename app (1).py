@@ -1,31 +1,8 @@
 import streamlit as st
 import pandas as pd
 
-# تحميل البيانات (تأكدي ان ملف zomato.csv موجود في نفس مجلد app.py)
-@st.cache_data
-def load_data():
-    df = pd.read_csv('cleaned_zomato_data.csv', encoding='latin-1')
-    df.drop_duplicates(inplace=True)
-    df['cuisines'] = df['Cuisines'].str.lower().str.strip()
-    df['primary_cuisine'] = df['cuisines'].apply(lambda x: x.split(',')[0] if pd.notnull(x) else x)
-    df['rating'] = pd.to_numeric(df['Aggregate rating'], errors='coerce')
-    df['cost'] = pd.to_numeric(df['Average Cost for two'], errors='coerce')
 
-    def cost_bucket(cost):
-        if pd.isnull(cost):
-            return None
-        elif cost < 300:
-            return 'low'
-        elif 300 <= cost <= 700:
-            return 'medium'
-        else:
-            return 'high'
-    df['cost_category'] = df['cost'].apply(cost_bucket)
-    df.dropna(subset=['City', 'cuisines', 'cost', 'rating'], inplace=True)
-    df.rename(columns={'Restaurant Name': 'name', 'City': 'city'}, inplace=True)
-    return df
-
-df = load_data()
+df = pd.read_csv('cleaned_zomato_data.csv', encoding='latin-1')
 
 def filter_and_rank(df, cuisines=None, budget=None, city=None, top_n=10):
     filtered = df.copy()
