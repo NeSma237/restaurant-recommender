@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import csv
 
 @st.cache_data
 def load_data():
@@ -51,7 +52,7 @@ if st.sidebar.button("Show Recommendations"):
             st.write(f"- Cost Category: **{row['cost_category'].title()}** (Approx ₹{int(row['cost'])} for two)")
             st.write(f"- Rating: **{row['rating']}★**")
             st.write(explain_row(row))
-            # خرائط جوجل
+            # خرائط جوجل لو موجودة الإحداثيات
             lat = row.get('Latitude')
             lon = row.get('Longitude')
             if pd.notnull(lat) and pd.notnull(lon):
@@ -59,34 +60,31 @@ if st.sidebar.button("Show Recommendations"):
                 st.markdown(f"[Open on Map]({map_url})")
             st.markdown("---")
 
-if st.sidebar.button("Show Recommendations"):
-    results = filter_and_rank(df, cuisines=cuisine_input, budget=budget_input, city=city_input, top_n=top_n)
-    if results.empty:
-        st.warning("No restaurants found matching your criteria.")
-    else:
-        for idx, row in results.iterrows():
-            st.markdown(f"### {row['name']}")
-            st.write(f"- Cuisine: **{row['primary_cuisine'].title()}**")
-            st.write(f"- Cost Category: **{row['cost_category'].title()}** (Approx ₹{int(row['cost'])} for two)")
-            st.write(f"- Rating: **{row['rating']}★**")
-            st.write(explain_row(row))
-            lat = row.get('Latitude')
-            lon = row.get('Longitude')
-            if pd.notnull(lat) and pd.notnull(lon):
-                map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
-                st.markdown(f"[Open on Map]({map_url})")
-            st.markdown("---")
-
-        # --- تقييم المستخدم بعد عرض التوصيات ---
+        # --- إضافة تقييم المستخدم بعد التوصيات ---
         st.header("📝 Feedback on Recommendations")
 
-        satisfaction = st.slider("How satisfied are you with the recommendations? (1 = Not satisfied, 5 = Very satisfied)", 1, 5, 3)
-        relevance = st.radio("Were the recommendations relevant to your preferences?", ("Yes", "No"))
+        satisfaction = st.slider(
+            "How satisfied are you with the recommendations? (1 = Not satisfied, 5 = Very satisfied)", 1, 5, 3)
+        relevance = st.radio(
+            "Were the recommendations relevant to your preferences?", ("Yes", "No"))
         usability = st.text_area("Any comments or suggestions to improve usability?")
 
         if st.button("Submit Feedback"):
-            # حفظ أو عرض التقييم (ممكن تحفظه في ملف أو قاعدة بيانات)
-            # هنا مثال بسيط: عرض ملخص التقييم فقط
+            feedback_data = {
+                "city": city_input,
+                "cuisines": ",".join(cuisine_input) if cuisine_input else "",
+                "budget": budget_input,
+                "satisfaction": satisfaction,
+                "relevance": relevance,
+                "comments": usability,
+            }
+            # حفظ التقييم في ملف CSV (append)
+            with open('feedback.csv', 'a', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=feedback_data.keys())
+                if f.tell() == 0:  # لو الملف جديد، نكتب العناوين
+                    writer.writeheader()
+                writer.writerow(feedback_data)
+
             st.success("Thank you for your feedback!")
             st.write(f"Satisfaction score: {satisfaction}")
             st.write(f"Relevant recommendations: {relevance}")
