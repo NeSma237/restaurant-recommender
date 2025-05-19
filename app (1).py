@@ -90,3 +90,6 @@ if st.session_state.get('feedback_submitted', False):
     st.write(f"Satisfaction score: {satisfaction}")
     st.write(f"Relevant recommendations: {relevance}")
     st.write(f"Comments: {usability if usability else 'No comments'}")
+
+if 'feedback_submitted' not in st.session_state:
+    st.session_state.feedback_submitted = False
