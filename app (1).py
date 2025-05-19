@@ -1,8 +1,12 @@
 import streamlit as st
 import pandas as pd
 
+@st.cache_data
+def load_data():
+    df = pd.read_csv('cleaned_zomato_data.csv', encoding='latin-1')
+    return df
 
-df = pd.read_csv('cleaned_zomato_data.csv', encoding='latin-1')
+df = load_data()
 
 def filter_and_rank(df, cuisines=None, budget=None, city=None, top_n=10):
     filtered = df.copy()
@@ -47,4 +51,10 @@ if st.sidebar.button("Show Recommendations"):
             st.write(f"- Cost Category: **{row['cost_category'].title()}** (Approx ₹{int(row['cost'])} for two)")
             st.write(f"- Rating: **{row['rating']}★**")
             st.write(explain_row(row))
+            # خرائط جوجل
+            lat = row.get('Latitude')
+            lon = row.get('Longitude')
+            if pd.notnull(lat) and pd.notnull(lon):
+                map_url = f"https://www.google.com/maps/search/?api=1&query={lat},{lon}"
+                st.markdown(f"[Open on Map]({map_url})")
             st.markdown("---")
