@@ -27,7 +27,7 @@ def filter_and_rank(df, cuisines=None, budget=None, city=None, top_n=10):
 def explain_row(row):
     return f"Matched on {row['primary_cuisine'].title()} cuisine, {row['cost_category']} budget with {row['rating']}★ rating"
 
-st.title("🍽️ Knowledge-Based Restaurant Recommender")
+st.title("Knowledge-Based Restaurant Recommender")
 
 st.sidebar.header("Your Preferences")
 
